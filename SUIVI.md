@@ -28,3 +28,7 @@ Loss: utiliser la référence 11 du papier (Gatys) ou IM01 pour les formules
 
 ### Objectif minimal de la semaine
 Première approche de l'importation du loss/modèle VGG. Prise en main des papiers.
+
+# Semaine du 06/05 au 13/05
+
+Proposition d'architecture, ajouts de fichiers de code qui définissent l'architecture du projet (non finis).
