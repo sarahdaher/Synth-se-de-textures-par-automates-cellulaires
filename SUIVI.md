@@ -34,3 +34,4 @@ Première approche de l'importation du loss/modèle VGG. Prise en main des papie
 Proposition d'architecture, ajouts de fichiers de code qui définissent l'architecture du projet (non finis).
 Importation dans loss.py du modèle VGG préexistant dans pytorch, voir la documentation: https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.vgg16.html 
 NB: j'ai importé le modèle dans la fonction déstinée à cela et bloqué les paramètres vu qu'on ne va pas l'entrainer. Il est déja entrainé sur IMAGENET, qui contient pleins de textures différentes donc qui est assez approprié.
+Code pour calculer les matrices de Gram et la VGG loss
