@@ -16,7 +16,7 @@ target_grams = get_target_grams(target)
 
 nca = NCA(C=C, hidden=HIDDEN, p=P).to(device)
 
-nca = train(nca, target_grams,steps=STEPS, batch=BATCH, H=SIZE, W=SIZE, out_dir=OUT_DIR)
+nca = train(nca, target_grams,steps=STEPS, batch=BATCH, H=SIZE, W=SIZE)
 
 torch.save(nca.state_dict(), f"{OUT_DIR}/nca.pth")
 

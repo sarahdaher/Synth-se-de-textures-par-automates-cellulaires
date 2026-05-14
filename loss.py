@@ -21,7 +21,7 @@ def gram_matrix(tnsr):
     return G
 
 
-#charge VGG19 : fonction a part car avant on chargait a chaque calcul
+#charge VGG16 : fonction a part car avant on chargait a chaque calcul
 def get_vgg():
     vgg = tv.vgg16( weights=tv.models.VGG16_Weights.IMAGENET1K_V1).features.eval()
 
