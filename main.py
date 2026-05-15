@@ -1,10 +1,12 @@
 import os
 import torch
+
 from nca    import NCA
 from loss   import *
 from train  import *
 from utils  import *
 from config import *
+
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
