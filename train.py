@@ -13,13 +13,12 @@ def make_pool(size=1024, C=12, H=128, W=128):
     """
     Cree un pool de size etats init avec du bruit U[0,1] ->renvoie tenseur (size, C, H, W)
     """
-    # TODO
     return torch.rand(size, C, H, W)
 
 
 def sample_pool(pool, batch_size):
     """
-At each training step we sample a few states from the pool and replace one of them with an empty state, so the model doesn't forget how to build the pattern from scratch (citee du papier)
+    At each training step we sample a few states from the pool and replace one of them with an empty state, so the model doesn't forget how to build the pattern from scratch (citee du papier)
 
     pioche batch_size etats random dans le pool et  force 1 a etre reinitialisé avec du bruit
 
@@ -44,6 +43,8 @@ def train(nca, target_grams, steps, batch, H, W):
 
     pool = make_pool()
     optimizer = optim.Adam(nca.parameters(), lr=2e-3)
+    
+
     for step in range(steps):
 
         if step == 2000:

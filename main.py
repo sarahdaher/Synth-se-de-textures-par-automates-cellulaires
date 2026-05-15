@@ -12,7 +12,7 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
-target  = load_texture(IMAGE_PATH, size=SIZE).to(device)
+target = load_texture(IMAGE_PATH, size=SIZE).to(device)
 
 target_grams = get_target_grams(target)
 

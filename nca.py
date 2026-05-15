@@ -35,23 +35,26 @@ class NCA(nn.Module):
 
         #ecrire le mlp
         self.mlp = nn.Sequential(
-            nn.Conv2d(C*4, hidden, kernel_size=1),
+            nn.Conv2d(4*C, hidden, kernel_size=1),
             nn.ReLU(),
             nn.Conv2d(hidden, C, kernel_size=1),
         )
-        
-        raise NotImplementedError
 
     def perceive(self, state):
         """Applique les 4 filtres sur la grille"""
         # torus topology (a voir comment faire??) + conv depthwise
 
-        raise NotImplementedError
+        # Conv depthwise : on applique les memes kernels sur chaque canal de la grille
+        perception_vector = F.conv2d(state, self.kernels.view(-1, 1, 3, 3), padding=1, groups=self.C)
+        return perception_vector # (B, 4*C, H, W)
 
     def forward(self, state, steps):
         """
         renvoie taille (B, C, H, W)
         a chaque step : perceive ->self.mlp -> masque Bernoulli(self.p) de shape (B, 1, H, W) -> maj de s
         """
-        # TODO
-        raise NotImplementedError
+        for _ in range(steps):
+            perception_vector = self.perceive(state) # (B, 4*C, H, W)
+            bernoulli_mask = torch.bernoulli(torch.full((state.shape[0], 1, state.shape[2], state.shape[3]), self.p, device=state.device)) # (B, 1, H, W)
+            state = state + bernoulli_mask * self.mlp(perception_vector)
+        return state
