@@ -61,4 +61,4 @@ Question: Page 4, tirage aléatoire d'un N, pourquoi cela? Diversité... - à re
 
 Remplissage du code: la semaine dernière nous avions créé une architecture vide, celle-ci est maintenant complète avec une première version. La loss a aussi étée changée selon les consignes données à la dernière réunion. Une partie de débuggage a aussi étée entamée, mais nous n'avons pas trouvé toutes les sources de problèmes (ou nous n'en sommes pas sûrs). En effet certains problèmes étaient minimes ( ie "loss += w * sum(F.mse_loss(G[i], A[0]) for i in range(G.shape[0]))" n'était pas divisé par 4, ce qui changeait la learning rate en théorie), et nous ne sommes pas certains qu'il s'agisse du ou d'un problème principal du code. 
 
-![Texte alternatif](imageV1.png "V1 imparfaite)
+![Texte alternatif](images/imageV1.jpeg "V1 imparfaite")
