@@ -61,11 +61,11 @@ architecture globale et premiers tests, ainsi que prise en main de la source env
 # Semaine du 13/05 au 20/05
 
 Remplissage du code: la semaine dernière nous avions créé une architecture vide, celle-ci est maintenant complète avec une première version. La loss a aussi étée changée selon les consignes données à la dernière réunion. Une partie de débuggage a aussi étée entamée, mais nous n'avons pas trouvé toutes les sources de problèmes (ou nous n'en sommes pas sûrs). En effet certains problèmes étaient minimes ( ie "loss += w * sum(F.mse_loss(G[i], A[0]) for i in range(G.shape[0]))" n'était pas divisé par 4, ce qui changeait la learning rate en théorie), et nous ne sommes pas certains qu'il s'agisse du ou d'un problème principal du code. 
-/n
+  
 Si on fixe le nombre de step au minimum ca ne change pas grand chose (esthétique).
-/n
+  
 Fix: les couleurs semblaient dégénérées, solutionné par clamp.
-/n
+  
 Code des matrices de Gram recopiée et comprise.
 ![Texte alternatif](images/imageV1.jpeg "V1 imparfaite")
 
@@ -77,15 +77,15 @@ Code des matrices de Gram recopiée et comprise.
 
 Compte rendu de la semaine: tous les morceaux de code marchent ensemble. L'ensemble du papier est implémenté sauf les extensions finales. 
 15/20 minutes d'execution du main (même avec GPU), jugée un peu long. A voir. Mais l'inférence est assez rapide donc étapes à séparer pour rendre cela plus rapide, qui est l'un des avantages supposé de cette méthode. Temps d'entrainement supposémment pas surprenant.
-/n
+  
 Matrice de Gram: regarder le reste du code.
-/n
+  
 Extensions potentielles: Textures dynamiques. Les sources peuvent être tirées du papier. Cela semble un peu compliqué tel quel mais il est envisageable d'imaginer une version plus simple et de s'approprier la technique. Le code est en ligne, donc vu la difficulté, le récuperer et le modifer suffit.
 
 ### Objectif de la semaine : 
 Faire des tests (et comprendre les méchanismes derrière). Utiliser nos photos en plus des photos du papier. Tester les limites du modèle: filtres pas différenciels, mais tirés au hasard (attention moyenne nulle), checker ce que le papier "prétend", ou MaJ...  
-/n 
+  
 Lire papier sur les textures dynamiques, tester leur code.
-/n
+  
 Il est préférable de clotûrer cette partie du code déjà faite avant de passer à autre chose (extension), donc il faut bien perfectionner, tester les limites et comprendre les propriétés importantes à garder avant de se lancer. 
 
