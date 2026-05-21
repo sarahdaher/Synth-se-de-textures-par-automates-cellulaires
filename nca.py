@@ -6,11 +6,11 @@ from config import *
 def make_kernels(C):
     """Retourne un tensor avec les 4 noyaux (s, sx, sy, lap) et les concatener"""
     s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32)
-    sx  = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32) /8
-    sy  = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=torch.float32) /8
-    lap = torch.tensor([[1, 2, 1], [2, -12, 2], [1, 2, 1]], dtype=torch.float32)/16 
+    sx  = torch.tensor([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=torch.float32)
+    sy  = torch.tensor([[-1, -1, -1], [0, 0, 0], [1, 1, 1]], dtype=torch.float32)
+    lap = torch.tensor([[1, 2, 1], [2, -12, 2], [1, 2, 1]], dtype=torch.float32) 
     kernels = torch.stack([s, sx, sy, lap])
-    kernels = kernels = kernels.unsqueeze(1).repeat(1, C, 1, 1).view(4*C, 1, 3, 3) #(4*C, 1, 3, 3) pour pytorch pas (4C, 3, 3) comme avant
+    kernels = kernels.unsqueeze(1).repeat(1, C, 1, 1).view(4*C, 1, 3, 3) #(4*C, 1, 3, 3) pour pytorch pas (4C, 3, 3) comme avant
     return kernels
 
 

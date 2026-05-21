@@ -3,6 +3,7 @@ import torchvision.models as tv
 import torch.nn as nn
 import torch.nn.functional as F
 from config import *
+from utils import *
 
 
 # fonctions similaires à http://colab.research.google.com/github/storimaging/Notebooks/blob/main/ImageGeneration/Style_Transfer.ipynb#scrollTo=CHKjVMHpYgkd
@@ -11,6 +12,10 @@ def normalize(x):
     mean = torch.tensor(MEAN, device=x.device).view(1, 3, 1, 1)
     std  = torch.tensor(STD,  device=x.device).view(1, 3, 1, 1)
     return (x - mean) / std
+
+
+def scale(x):
+    return (x - x.min()) / (x.max() - x.min())    
 
 
 def gram_matrix(tnsr):
@@ -22,7 +27,7 @@ def gram_matrix(tnsr):
     b, c, h, w = tnsr.size()
     Fm = tnsr.view(b, c, h * w)
     G = torch.bmm(Fm, Fm.transpose(1, 2))
-    G.div_(h * w)
+    #G.div_(h * w)
     return G
 
 
@@ -38,34 +43,26 @@ def get_vgg():
 VGG = get_vgg().to(device) 
 
 
-
 def get_target_grams(img): #sera appele dans main pr calculer les target_grams
-
     grams = []
     x = normalize(img)
     for i, layer in enumerate(VGG):
         x = layer(x)
         if i in LAYERS:
-            grams.append(gram_matrix(x))
+            grams.append(gram_matrix(x).detach())  # FIX 1 : detach pour pas garder le graphe VGG
     return grams
 
 
-# texture loss
-def texture_loss(y_pred, target_grams, weights=[1., 1., 1., 1.]): #sera appele dans train.py pr calculer la loss
-    """
-    Calcule la loss entre pred_rgb et target_grams et la retourner
+def texture_loss(y_pred, target_grams, weights=[1., 1., 1., 1.]):
+    pred_grams = []
+    x = normalize(y_pred.clamp(0, 1))
+    for i, layer in enumerate(VGG):
+        x = layer(x)
+        if i in LAYERS:
+            pred_grams.append(gram_matrix(x))  # pas de .detach() ici !
 
-    y_pred: (B, 3, H, W) sortie RGB du NCA en [0,1] (considerer qu'on a deja pris les 3 canaux dans train.py donc qu'on a la bonne entree)
-    target_grams: liste de 4 matrices de Gram (precalculees)
-    weight: poids pour chaque couche
-    appliquer eqt 2 de la ref 11 du papier 
-    
-    SOURCE DU HAUT
-    """
-    pred_grams = get_target_grams(y_pred)
     loss = 0
     for G, A, w in zip(pred_grams, target_grams, weights):
-        loss += w * sum(F.mse_loss(G[i], A[0]) for i in range(G.shape[0])) #G de shape (B, C, C) et A de shape (1, C, C) 
-        #loss += w * F.mse_loss(G, A)
+        loss += w * ((G - A.expand_as(G)) ** 2).mean()
 
     return loss
