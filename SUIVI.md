@@ -90,3 +90,14 @@ Faire des tests (et comprendre les méchanismes derrière). Utiliser nos photos 
 Lire papier sur les textures dynamiques, tester leur code.
   
 Il est préférable de clotûrer cette partie du code déjà faite avant de passer à autre chose (extension), donc il faut bien perfectionner, tester les limites et comprendre les propriétés importantes à garder avant de se lancer. 
+
+
+# Semaine du 20/05 au 27/05
+
+Tests effectués sur le code actuel: dossiers F1, F2, F3 disponibles dans le dossier image. Les détails des tests sont disponibles dans README.md. 
+Globalement, il y a eu des tests sur les types de filtres, le clamp comme solution des couleurs aberrantes...
+*Conclusions tirées:*
+
+Papier sur les textures dynamiques:
+Questions:
+- 
