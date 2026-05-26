@@ -99,6 +99,6 @@ Globalement, il y a eu des tests sur les types de filtres, le clamp comme soluti
   
 *Conclusions tirées:*
 
-Papier sur les textures dynamiques:  
+Papier sur les textures dynamiques: https://openaccess.thecvf.com/content/CVPR2023/papers/Pajouheshgar_DyNCA_Real-Time_Dynamic_Texture_Synthesis_Using_Neural_Cellular_Automata_CVPR_2023_paper.pdf  
 Questions:
 - Q1..
