@@ -1,3 +1,12 @@
+# Suivi des versions
+
+- F1 :
+- F2 :
+- F3 : version du 22 mai (après ajout d'autres versions de kernels/filtres par Baptiste) (la configuration — nombre de steps, preset, etc. — est précisée dans le document _CONFIG_i.txt pour chaque dossier test_i)
+
+
+
+
 # Réunion 1: 06/05
 
 ### Prochaine réunion le 13/05
