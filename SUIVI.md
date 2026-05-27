@@ -103,6 +103,10 @@ Tests effectués avec PRESET = 1 :
 Globalement, il y a eu des tests sur les types de filtres, le clamp comme solution des couleurs aberrantes...
   
 *Conclusions tirées:*
+- Remplacer les filtres différentiels par des filtres aléatoires donne de bons résultats dès lors qu'ils sont de moyenne nulle
+- L'utilisation du filtre I (matrice 3x3 avec un 1 au centre) semble toutefois indispensable
+- D'autres filtres différentiels peuvent être utilisés à la place de Sobel mais ne donnent pas de meilleurs résultats (il faut faire attention à contrôler la loss)
+
 
 Papier sur les textures dynamiques: https://openaccess.thecvf.com/content/CVPR2023/papers/Pajouheshgar_DyNCA_Real-Time_Dynamic_Texture_Synthesis_Using_Neural_Cellular_Automata_CVPR_2023_paper.pdf  
 Questions:
