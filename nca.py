@@ -3,37 +3,37 @@ import torch.nn as nn
 import torch.nn.functional as F
 from config import *
 
-def make_kernels(C, nbFilters=4):
+def make_kernels(C, nbFilters=4, preset=0):
     """Retourne un tensor avec les 4 noyaux (s, sx, sy, lap) et les concatener"""
-    if PRESET == 0:
+    if preset == 0:
         s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32)
-        sx  = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32) /6
-        sy  = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=torch.float32) /6
+        sx  = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32) /8
+        sy  = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=torch.float32) /8
         lap = torch.tensor([[1, 2, 1], [2, -12, 2], [1, 2, 1]], dtype=torch.float32) /24
         kernels = torch.stack([s, sx, sy, lap])
 
-    elif PRESET == 1:
+    elif preset == 1:
         s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32)
         sx  = torch.tensor([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=torch.float32) /6
         sy  = torch.tensor([[-1, -1, -1], [0, 0, 0], [1, 1, 1]], dtype=torch.float32) /6
         lap = torch.tensor([[1, 2, 1], [2, -12, 2], [1, 2, 1]], dtype=torch.float32) /24
         kernels = torch.stack([s, sx, sy, lap])
 
-    elif PRESET == 2:
+    elif preset == 2:
         s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32)
-        sx  = torch.tensor([[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]], dtype=torch.float32) /6
-        sy  = torch.tensor([[-3, -10, -3], [0, 0, 0], [3, 10, 3]], dtype=torch.float32) /6
+        sx  = torch.tensor([[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]], dtype=torch.float32) /32
+        sy  = torch.tensor([[-3, -10, -3], [0, 0, 0], [3, 10, 3]], dtype=torch.float32) /32
         lap = torch.tensor([[1, 2, 1], [2, -12, 2], [1, 2, 1]], dtype=torch.float32) /24
         kernels = torch.stack([s, sx, sy, lap])
 
-    elif PRESET == 3:
-        gaussian = torch.tensor([[1, 2, 1], [2, 4, 2], [1, 2, 1]], dtype=torch.float32) / 16
-        sx  = torch.tensor([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=torch.float32) /6
-        sy  = torch.tensor([[-1, -1, -1], [0, 0, 0], [1, 1, 1]], dtype=torch.float32) /6
+    elif preset == 3:
+        gaussian = torch.tensor([[1, 2, 1], [2, 4, 2], [1, 2, 1]], dtype=torch.float32) /16
+        sx  = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32) /8
+        sy  = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=torch.float32) /8
         lap = torch.tensor([[1, 2, 1], [2, -12, 2], [1, 2, 1]], dtype=torch.float32) /24
         kernels = torch.stack([gaussian, sx, sy, lap])
 
-    elif PRESET == 4:
+    elif preset == 4:
         s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32)
         s1 = torch.randint(0, 10, (3, 3), dtype=torch.float32)
         s1.div_(torch.sum(s1))
@@ -43,7 +43,7 @@ def make_kernels(C, nbFilters=4):
         s3.div_(torch.sum(s3))
         kernels = torch.stack([s, s1, s2, s3])
 
-    elif PRESET == 5:
+    elif preset == 5:
         s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32)
         s1 = torch.randint(0, 10, (3, 3), dtype=torch.float32)
         s1.div_(torch.sum(s1)) 
@@ -57,11 +57,8 @@ def make_kernels(C, nbFilters=4):
         s3 = s3 - torch.mean(s3)
         kernels = torch.stack([s, s1, s2, s3])    
 
-    elif PRESET == 6:
+    elif preset == 6:
         s1 = torch.randint(0, 10, (3, 3), dtype=torch.float32)
-        s1.div_(torch.sum(s1)) 
-        s1 = s1 - torch.mean(s1)
-        print(s1)
         s2 = torch.randint(0, 10, (3, 3), dtype=torch.float32)
         s2.div_(torch.sum(s2))
         s2 = s2 - torch.mean(s2)
@@ -75,9 +72,10 @@ def make_kernels(C, nbFilters=4):
         s4 = s4 - torch.mean(s4)
         print(s4)
         kernels = torch.stack([s1, s2, s3, s4])    
+        kernels = kernels / (kernels.norm() + 1e-6)
 
-    elif PRESET == 7:
-        s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32)
+    elif preset == 7:
+        s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32) /2
         kernels = torch.stack([s])
 
     kernels = kernels.unsqueeze(1).repeat(1, C, 1, 1).view(nbFilters*C, 1, 3, 3) #(4*C, 1, 3, 3) pour pytorch pas (4C, 3, 3) comme avant
@@ -87,7 +85,7 @@ def make_kernels(C, nbFilters=4):
 
 class NCA(nn.Module):
 
-    def __init__(self, C=C, hidden=HIDDEN, p=P):
+    def __init__(self, C=C, hidden=HIDDEN, p=P, preset=0):
         """
         Parameters
         ----------
@@ -100,13 +98,13 @@ class NCA(nn.Module):
         self.C = C
         self.p = p
 
-        if PRESET <= 6:
+        if preset <= 6:
             self.nb_filters = 4
         else:
             self.nb_filters = 1
 
         #enregistrer les kernels (self.kernels) comme buffer (avec la fct register_buffer pour pas les apprendre car ils sont fixes (sobel et laplacien) ; une fonction pytorch)
-        kernels = make_kernels(C, self.nb_filters)
+        kernels = make_kernels(C, self.nb_filters, preset)
         self.register_buffer("kernels", kernels)
 
         #ecrire le mlp
