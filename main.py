@@ -56,14 +56,13 @@ if not INFERENCE:
     plt.savefig(f"{OUT_DIR}/loss_history.png")
     plt.show()
 else:
-    for preset_filter in range(7):
-        nca = NCA(C=C, hidden=HIDDEN, p=P, preset=preset_filter).to(device)
-        nca.load_state_dict(torch.load(f"{OUT_DIR}/nca.pth"))
-        nca.eval()
-        with torch.no_grad():
-            state= torch.rand(NB_IMGS, C, SIZE, SIZE, device=device)
-            state= nca(state, steps=200)
+    nca = NCA(C=C, hidden=HIDDEN, p=P, preset=PRESET).to(device)
+    nca.load_state_dict(torch.load(f"{OUT_DIR}/nca.pth"))
+    nca.eval()
+    with torch.no_grad():
+        state= torch.rand(NB_IMGS, C, SIZE, SIZE, device=device)
+        state= nca(state, steps=200)
 
-        for i in range(NB_IMGS):
-            os.makedirs(f"{OUT_DIR}/preset_{preset_filter}", exist_ok=True)
-            save_image(state[i,:3,:,:], f"{OUT_DIR}/preset_{preset_filter}/final_{i}.png")
+    for i in range(NB_IMGS):
+        os.makedirs(f"{OUT_DIR}/preset_{PRESET}", exist_ok=True)
+        save_image(state[i,:3,:,:], f"{OUT_DIR}/preset_{PRESET}/final_{i}.png")

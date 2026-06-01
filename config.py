@@ -1,8 +1,8 @@
 import torch
 
-IMAGE_PATH = "textures/bubbles.png"
+IMAGE_PATH = "textures/cheveux.png"
 OUT_DIR = "output"
-STEPS = 8000
+STEPS = 10000
 BATCH = 4
 SIZE = 128
 C = 12
