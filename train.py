@@ -54,6 +54,7 @@ def train(nca, target_grams, steps, batch, H, W, device):
         states, idx = sample_pool(pool, batch)
         n=random.randint(32, 64) 
         states = nca(states, steps=n)
+
         loss = texture_loss(states[:,:3,:,:], target_grams)
         optimizer.zero_grad()
         loss.backward()

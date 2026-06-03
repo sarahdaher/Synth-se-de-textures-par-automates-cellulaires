@@ -78,7 +78,9 @@ def make_kernels(C, nbFilters=4, preset=0):
         s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32) /2
         kernels = torch.stack([s])
 
-    kernels = kernels.unsqueeze(1).repeat(1, C, 1, 1).view(nbFilters*C, 1, 3, 3) #(4*C, 1, 3, 3) pour pytorch pas (4C, 3, 3) comme avant
+    kernels = kernels.unsqueeze(1).repeat(C, 1, 1, 1) # (4*C, 1, 3, 3)
+    print(kernels.shape)
+    print(kernels)
     return kernels
     
 
@@ -122,7 +124,12 @@ class NCA(nn.Module):
         # torus topology (a voir comment faire??) + conv depthwise
         state = F.pad(state, (1,1,1,1), mode='circular') #torus topolgy c juste circular si jai bien compris
         # Conv depthwise : on applique les memes kernels sur chaque canal de la grille
+        # print("Before perception", state.shape)
+        # print(self.C)
+        # print(state)
         perception_vector = F.conv2d(state, self.kernels.view(-1, 1, 3, 3), groups=self.C)
+        # print("Perception vector:", perception_vector.shape)
+        # print(perception_vector[0, :5, :, :])
         return perception_vector # (B, 4*C, H, W)
 
     def forward(self, state, steps):
@@ -134,4 +141,5 @@ class NCA(nn.Module):
             perception_vector = self.perceive(state) # (B, 4*C, H, W)
             bernoulli_mask = torch.bernoulli(torch.full((state.shape[0], 1, state.shape[2], state.shape[3]), self.p, device=state.device)) # (B, 1, H, W)
             state = state + bernoulli_mask * self.mlp(perception_vector)
+            
         return state

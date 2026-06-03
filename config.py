@@ -1,8 +1,8 @@
 import torch
 
-IMAGE_PATH = "textures/dotted.png"
+IMAGE_PATH = "textures/bubbles.png"
 OUT_DIR = "output"
-STEPS = 2000
+STEPS = 5000
 BATCH = 4
 SIZE = 128
 C = 12

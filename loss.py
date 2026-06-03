@@ -14,10 +14,6 @@ def normalize(x):
     return (x - mean) / std
 
 
-def scale(x):
-    return (x - x.min()) / (x.max() - x.min())    
-
-
 def gram_matrix(tnsr):
     """
     f représente les activations d'une couche du VGG
@@ -27,7 +23,7 @@ def gram_matrix(tnsr):
     b, c, h, w = tnsr.size()
     Fm = tnsr.view(b, c, h * w)
     G = torch.bmm(Fm, Fm.transpose(1, 2))
-    G /= (c*h*w)
+    G /= (h * w)
     return G
 
 
@@ -53,9 +49,9 @@ def get_target_grams(img): #sera appele dans main pr calculer les target_grams
     return grams
 
 
-def texture_loss(y_pred, target_grams, weights=[1., 1., 1., 1.]):
+def texture_loss(y_pred, target_grams, weights=[1/(64**2), 1/(128**2), 1/(256**2), 1/(512**2)]):
     pred_grams = []
-    x = normalize(y_pred.clamp(0, 1))
+    x = normalize(y_pred) #clamp pour forcer les valeurs entre 0 et 1
     for i, layer in enumerate(VGG):
         x = layer(x)
         if i in LAYERS:

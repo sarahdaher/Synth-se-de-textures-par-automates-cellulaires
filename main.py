@@ -46,7 +46,7 @@ for preset_filter in range(7):
 
 if not INFERENCE:
     nca = NCA(C=C, hidden=HIDDEN, p=P, preset=PRESET).to(device)
-    nca, loss_history = train(nca, target_grams,steps=STEPS, batch=BATCH, H=SIZE, W=SIZE, device=device)
+    nca, loss_history = train(nca, target_grams, steps=STEPS, batch=BATCH, H=SIZE, W=SIZE, device=device)
     torch.save(nca.state_dict(), f"{OUT_DIR}/nca.pth")
     plt.plot(loss_history)
     plt.yscale("log")
