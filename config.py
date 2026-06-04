@@ -52,7 +52,7 @@ STD    = [0.229, 0.224, 0.225] #std imagenet
 
 PRESET = 0
 
-INFERENCE = False
+INFERENCE = True
 # !!!! si multi-textures :
 # si INFERENCE = True, ne pas oublier de préciser TEX_IDX la texture qu'on veut générer!!!
 

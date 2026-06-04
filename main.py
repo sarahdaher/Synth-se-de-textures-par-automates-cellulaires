@@ -106,5 +106,5 @@ if MULTI_TEX:
         tex_name = texture_name = os.path.splitext(filename)[0]
 
         for i in range(NB_IMGS):
-            os.makedirs(f"{OUT_DIR}/preset_{PRESET}", exist_ok=True)
+            os.makedirs(f"{OUT_DIR}/tex_{tex_name}_preset_{PRESET}", exist_ok=True)
             save_image(state[i,:3,:,:].clamp(0, 1), f"{OUT_DIR}/tex_{tex_name}_preset_{PRESET}/final_{i}.png")
