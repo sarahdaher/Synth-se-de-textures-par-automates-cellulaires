@@ -2,7 +2,7 @@ import torch
 
 IMAGE_PATH = "textures/bubbles.png"
 OUT_DIR = "output"
-STEPS = 5000
+STEPS = 10000
 BATCH = 4
 SIZE = 128
 C = 12
