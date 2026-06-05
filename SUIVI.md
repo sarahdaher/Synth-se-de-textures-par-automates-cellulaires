@@ -156,4 +156,19 @@ Le code semble bien fonctionner :
 
 
 
+# Réunion 4: 05/06
+
+### Prochaine réunion: Vendredi midi en visio 12h
+
+Compte-rendu global et discussion sur comment bien finaliser le projet.
+Rédiger rapport sur ce qu’on a compris, les experiences, conséquences de certaines actions… A commencer, réfléchir sur comment agencer notre travail.
+Creuser partie multitexture (potentiellement).
+Regarder ce qu’il passe si on n’ajoute pas ce qui est proposé dans le papier- si on reprend juste notre architecture quelles conséquences ça a? (A priori mélange).
+voir distance de Wasserstein - potentiellement implementer? Cf projet IM01 Sarahs
+Dotted, il est envisageable d’intercaler deux méthodes dont une sur les couleurs. Tester si plus de pas mènent à la convergence.
+
+### Objectif de la semaine : 
+- Début rapport et organisation des différents résultats
+- Dégager les experiences à faire et commencer à les lancer
+- Check quelle piste on veut suivre (multitexture...) 
 
