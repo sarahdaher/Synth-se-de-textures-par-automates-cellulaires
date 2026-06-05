@@ -134,4 +134,26 @@ Objectif peut-être plus long terme: créer un petit modèle dynamique simple (�
 Envoyer lien sur ce que l'on à fait la veille, mercredi/jeudi (tests et conclusions...). Moins d'essais à pousser un peu plus.  
 
 
+# Semaine du 27/05 au 05/06
+
+### Amélioration de l'architecture mono-texture
+
+Nous avons créé une grille de tests (cf. google sheet), mais n'étions pas satisfaits par les résultats obtenus. Les deux défauts principaux étaient les fausses couleurs, c'est-à-dire l'assombrissement de l'image, et la perte de structure, c'est-à-dire, pour l'image bubbles par exemple, l'apparition de bulles difformes et mal espacées. Pour solutionner ce problème, nous avons testé les couches unes par unes, afin de comprendre leur impact individuel (NB: nous avions déjà augmenté le poids des premières couches comme recommandé). Nous avons découvert que la dernière couche faisait la grande majorité du travail.
+
+Nous avons eu beaucoup de mal à obtenir une version satisfaisante du code, mais au final nous sommes plutôt satisfaits de la version actuelle.  
+![Texte alternatif](images/sheet_code_debug.png "Synthèse actuelle")
+
+Nous avons bien ajouté le monitoring du loss, et testé différents filtres (voir la description des presets dans le README).  
+![Texte alternatif](images/presets.png "Tests des presets")
+
+### Implémentation de l'architecture multi-textures
+
+Nous avons également implémenté un premier jet de l'approche multi-textures en nous basant sur le papier « Multi-texture synthesis through signal responsive neural cellular automata » de Catrina et. al. ; notre code a ainsi été généralisé pour pouvoir entraîner un réseau permettant ensuite de synthétiser autant de textures que l'on veut (sous contrainte d'avoir un nombre de textures égal à une puissance de 2).
+Nous avons effectué un premier test en entraînant le réseau sur deux textures — la texture leopard et la texture brique — pendant 4000 steps (soit environ 2000 steps d'entraînement pour chacune des deux textures). 
+Le code semble bien fonctionner : 
+
+<img width="326" alt="image" src="https://github.com/user-attachments/assets/6fbca8f3-e6de-4ff0-b009-6dca64474aab" />
+
+
+
 
