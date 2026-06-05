@@ -10,13 +10,15 @@ if not MULTI_TEX:
 
 if MULTI_TEX:
 
-    N_G = 1 # number of genomic channels !!! 2^N_G = N_TEX textures générées
+    N_G = 2 # number of genomic channels !!! 2^N_G = N_TEX textures générées
     IMAGES_PATHS = [ # Le vecteur doit être de taille 2^N_G ! --- indexes 0, 1, …, N_TEX
         "leopard.jpg",
-        "brique.jpg"
+        "brique.jpg",
+        "bubbles.png",
+        "indie.jpeg"
     ]
-    TEX_IDX = 1 # index de la texture que l'on souhaite générer pour le TEST
-    C = 16 # C = 3 + N_G + N_H
+    TEX_IDX = 2 # index de la texture que l'on souhaite générer pour le TEST
+    C = 18 # C = 3 + N_G + N_H
 
 
     # PAS BESOIN DE S'EN PREOCCUPER ICI, MACROS CALCULEES TT SEULES
@@ -40,7 +42,7 @@ if MULTI_TEX:
 ###############################################################################################
 
 OUT_DIR = "output"
-STEPS = 4000
+STEPS = 20000
 BATCH = 4
 SIZE = 128
 HIDDEN = 96
