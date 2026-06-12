@@ -185,7 +185,8 @@ Dotted, il est envisageable d’intercaler deux méthodes dont une sur les coule
 Tests multi-textures. Résultats globalement satisfaisants.
 Implémentation d'une color loss.
 Tests sur l'image dotted à 20 000 steps (avant 10 000), car c'était la dernière qui nous paraissait incomplète en terme de résultats. Les couleurs sont plus fidèles, mais la réalisation reste imparfaite (plus irrégulière que sur le papier d'origine ou des images similaires comme bubbles). Cependant en comparant aux résultats présentés sur le site des textures dynamiques, il semble que nos résultats soient équivalents aux leurs. L'image est sûrement compliquée de par sont architecture (points irréguliers) et ses couleurs variées. 
-Au vu de la fin du projet qui approche, nous restons sur les pistes déjà lancées (multitexture).
+Première implémentation de sliced optimal transport.
+Au vu de la fin du projet qui approche, nous restons sur les pistes déjà lancées (multitexture, sliced optimal transport).
 Le rapport est commencé (à discuter en réunion), avec une première organisation.
   
 ![Dotted 20000steps](images/dotted-20000steps/preset_0/final_7.png "Dotted 20 000")
