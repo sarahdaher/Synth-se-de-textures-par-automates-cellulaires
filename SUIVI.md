@@ -190,3 +190,6 @@ Au vu de la fin du projet qui approche, nous restons sur les pistes déjà lanc�
 Le rapport est commencé (à discuter en réunion), avec une première organisation.
   
 ![Dotted 20000steps](images/dotted-20000steps/preset_0/final_7.png "Dotted 20 000")
+
+Dotted avec SOT, 15 000 steps:
+![Dotted 15000steps](images/sot_preset_0/final_9.png "Dotted SOT")
