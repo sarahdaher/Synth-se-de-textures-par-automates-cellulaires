@@ -138,9 +138,15 @@ Envoyer lien sur ce que l'on à fait la veille, mercredi/jeudi (tests et conclus
 
 ### Amélioration de l'architecture mono-texture
 
-Nous avons créé une grille de tests (cf. google sheet), mais n'étions pas satisfaits par les résultats obtenus. Les deux défauts principaux étaient les fausses couleurs, c'est-à-dire l'assombrissement de l'image, et la perte de structure, c'est-à-dire, pour l'image bubbles par exemple, l'apparition de bulles difformes et mal espacées. Pour solutionner ce problème, nous avons testé les couches unes par unes, afin de comprendre leur impact individuel (NB: nous avions déjà augmenté le poids des premières couches comme recommandé). Nous avons découvert que la dernière couche faisait la grande majorité du travail.
+Nous avons créé une grille de tests (cf. google sheet), mais n'étions pas satisfaits par les résultats obtenus. Les deux défauts principaux étaient les fausses couleurs, c'est-à-dire l'assombrissement de l'image, et la perte de structure, c'est-à-dire, pour l'image bubbles par exemple, l'apparition de bulles difformes et mal espacées. Pour solutionner ce problème, nous avons testé les couches unes par unes, afin de comprendre leur impact individuel (NB: nous avions déjà augmenté le poids des premières couches comme recommandé). Nous avons découvert que la dernière couche faisait la grande majorité du travail. 
 
-Nous avons eu beaucoup de mal à obtenir une version satisfaisante du code, mais au final nous sommes plutôt satisfaits de la version actuelle.  
+Le problème des couleurs (mais pas que) venait de plusieurs sources:
+
+- Le fait que nous avions choisi de retirer la normalisation des matrices de Gram par (H x W). Nous avons remis cette normalisation et ajouté en plus des poids différents pour chaque couche dans le calcul de la loss: au lieu de considérer que les matrices de Gram venant de chaque de VGG ont toutes le même poids, on pondère la loss par 1/nb_channels_i^2 où nb_channels_i est la profondeur des features maps à la couche i (64 pour la couche 1, 128 pour la couche 6, 256 pour la couche 11 et 512 pour la couche 18). Cette pondération donne un poids égal à toutes les couches dans le calcul de la loss.
+
+- Le fait d'écrêter (clamp) les images prédites avant le calcul de la loss, ce qui tendait à rendre certaines compsantes (R, G ou B) prépondérantes et donc à de mauvaises couleurs.
+
+Nous avons eu beaucoup de mal à obtenir une version satisfaisante du code, mais au final nous sommes plutôt satisfaits de la version actuelle. 
 ![Texte alternatif](images/sheet_code_debug.png "Synthèse actuelle")
 
 Nous avons bien ajouté le monitoring du loss, et testé différents filtres (voir la description des presets dans le README).  
@@ -156,7 +162,7 @@ Le code semble bien fonctionner :
 
 
 
-# Réunion 4: 05/06
+# Réunion 5: 05/06
 
 ### Prochaine réunion: Vendredi midi en visio 12h
 

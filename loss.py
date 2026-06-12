@@ -63,6 +63,7 @@ def texture_loss(y_pred, target_grams, weights=[1/(64**2), 1/(128**2), 1/(256**2
 
     return loss
 
+
 #####SOT#####
 def calc_styles_vgg(imgs):
     b, c, h, w = imgs.shape
@@ -108,4 +109,9 @@ def texture_loss_sot(y_pred, target_img, weights=[1, 1, 1, 1]):
     for pred, target, w in zip(pred_styles, target_styles, weights):
         loss = loss + w * ot_loss(pred, target.detach())
 
+    return loss
+
+
+def color_loss_sot(y_pred, target_img):
+    loss = ot_loss(y_pred.view(y_pred.shape[0], y_pred.shape[1], -1), target_img.view(target_img.shape[0], target_img.shape[1], -1).detach(), proj_n=1024)
     return loss
