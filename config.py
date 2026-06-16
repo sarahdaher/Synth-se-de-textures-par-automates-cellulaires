@@ -4,18 +4,18 @@ MULTI_TEX = False
 
 
 if not MULTI_TEX:
-    IMAGE_PATH = "textures/dotted.jpg"
+    IMAGE_PATH = "paris.jpg"
     C = 12
 
 
 if MULTI_TEX:
 
-    N_G = 1 # number of genomic channels !!! 2^N_G = N_TEX textures générées
+    N_G = 2 # number of genomic channels !!! 2^N_G = N_TEX textures générées
     IMAGES_PATHS = [ # Le vecteur doit être de taille 2^N_G ! --- indexes 0, 1, …, N_TEX
-        "leopard.jpg",
+        "ecailles.jpg",
         "brique.jpg",
-        "bubbles.png",
-        "indie.jpeg"
+        "cerise.jpg",
+        "moquette.jpg"
     ]
     TEX_IDX = 2 # index de la texture que l'on souhaite générer pour le TEST
     C = 18 # C = 3 + N_G + N_H
@@ -42,7 +42,7 @@ if MULTI_TEX:
 ###############################################################################################
 
 OUT_DIR = "output"
-STEPS = 20000
+STEPS = 10000
 BATCH = 4
 SIZE = 128
 HIDDEN = 96
@@ -54,7 +54,7 @@ STD    = [0.229, 0.224, 0.225] #std imagenet
 
 PRESET = 0
 
-LOSS = "sot"  # sot ou gram
+LOSS = "gram"  # sot ou gram
 
 INFERENCE = False
 # !!!! si multi-textures :
@@ -63,7 +63,7 @@ INFERENCE = False
 NB_IMGS = 10
 
 # mac
-device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
+# device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
 
 #pas mac
-#device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
