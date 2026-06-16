@@ -57,7 +57,7 @@ if not MULTI_TEX:
             n=random.randint(32, 64) 
             states = nca(states, steps=n)
 
-            rgb = states[:, :3, :, :].clamp(0, 1)
+            rgb = states[:, :3, :, :]
 
             # switch loss selon config
             if LOSS == "sot":
@@ -140,7 +140,7 @@ if MULTI_TEX:
             n=random.randint(32, 128) 
             states = nca(states, steps=n)
 
-            rgb = states[:, :3, :, :].clamp(0, 1)
+            rgb = states[:, :3, :, :]
 
             if LOSS == "sot":
                 loss = texture_loss_sot(rgb, list_targets[tex_idx])

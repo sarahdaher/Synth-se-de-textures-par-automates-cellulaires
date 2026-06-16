@@ -64,17 +64,19 @@ def texture_loss(y_pred, target_grams, weights=[1/(64**2), 1/(128**2), 1/(256**2
     return loss
 
 
-#####SOT#####
+##### SOT #####
+
 def calc_styles_vgg(imgs):
     b, c, h, w = imgs.shape
     x = normalize(imgs.clamp(0, 1))
+    #je rajoute rgb en plus des features des layers
+    features = [x.reshape(b, c, h * w)]
 
-    features = []
     for i, layer in enumerate(VGG):
         x = layer(x)
         if i in LAYERS:
             b2, c2, h2, w2 = x.shape
-            features.append(x.reshape(b2, c2, h2*w2))
+            features.append(x.reshape(b2, c2, h2 * w2))
 
     return features
 
@@ -84,34 +86,21 @@ def project_sort(x, proj):
     #(B,C,N) -> (B,N,C) @ (C,P) -> (B,N,P) -> (B,P,N)
     return (x.permute(0, 2, 1) @ proj).permute(0, 2, 1).sort(dim=-1)[0]
 
-
-def ot_loss(source, target, proj_n=512):
-    ch = source.shape[1]   
-    n  = source.shape[2]   
+def ot_loss(source, target, proj_n=32):
+    ch = source.shape[1]
 
     projs = torch.randn(ch, proj_n, device=source.device)
-    projs = projs / (torch.norm(projs, dim=0, keepdim=True) + 1e-8)
+    projs = projs / (projs.norm(dim=0, keepdim=True) + 1e-8)
 
-    source_proj = project_sort(source, projs)   
-    target_proj = project_sort(target, projs)   
+    source_proj = project_sort(source, projs)           # (B, P, N)
+    target_proj = project_sort(target, projs)           # (1, P, N)
+    target_proj = target_proj.expand_as(source_proj)    # (B, P, N)
 
-    if target_proj.shape[-1] != n:
-        target_proj = F.interpolate(target_proj, size=n, mode="nearest")
+    return (source_proj - target_proj).square().sum()
 
-    return (source_proj - target_proj).square().mean()
-
-
-def texture_loss_sot(y_pred, target_img, weights=[1, 1, 1, 1]):
+def texture_loss_sot(y_pred, target_img):
     pred_styles   = calc_styles_vgg(y_pred)
     target_styles = calc_styles_vgg(target_img)
 
-    loss = 0
-    for pred, target, w in zip(pred_styles, target_styles, weights):
-        loss = loss + w * ot_loss(pred, target.detach())
-
-    return loss
-
-
-def color_loss_sot(y_pred, target_img):
-    loss = ot_loss(y_pred.view(y_pred.shape[0], y_pred.shape[1], -1), target_img.view(target_img.shape[0], target_img.shape[1], -1).detach(), proj_n=1024)
+    loss = sum(ot_loss(p, t.detach()) for p, t in zip(pred_styles, target_styles))
     return loss
