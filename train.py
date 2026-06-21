@@ -1,7 +1,6 @@
 import random
 import torch
 import torch.optim as optim
-import torch.nn.functional as F
 from config import *
 from loss import texture_loss, texture_loss_sot
 from utils import save_image
@@ -9,27 +8,30 @@ from tqdm import tqdm
 
 #surtout la section 3.2
 
+# Séparation selon le modèle
+
 if not MULTI_TEX:
 
     def make_pool(size=1024, C=12, H=SIZE, W=SIZE):
         """
         Cree un pool de size etats init avec du bruit U[0,1] ->renvoie tenseur (size, C, H, W)
+        plutôt que de recommencer de zéro à chaque step, on continue depuis des états déjà partiellement développés
         """
         return torch.rand(size, C, H, W)
 
 
     def sample_pool(pool, batch_size):
         """
-        At each training step we sample a few states from the pool and replace one of them with an empty state, so the model doesn't forget how to build the pattern from scratch (citee du papier)
-
-        pioche batch_size etats random dans le pool et  force 1 a etre reinitialisé avec du bruit
-
+        Pioche batch_size états aléatoires dans le pool.
+        Force la réinitialisation du premier état tiré (au pif) avec du bruit aléatoire, comme décrit dans le papier :
+        "we replace one of them with an empty state, so the model doesn't forget how to build the pattern from scratch"
+        
         on return batch (batch_size, C, H, W), idx (liste d'indices) 
         """
         
-        idx      = random.sample(range(len(pool)), batch_size)
-        batch    = pool[idx].clone() #"At each training step we sample a few states from the pool and replace one of them with an empty state" , clone c'est le copy de torch
-        batch[0] = torch.rand(batch[0].shape)   #jai choisi le premier au pif car aleatoire 
+        idx      = random.sample(range(len(pool)), batch_size) # Choix aléatoire d'indices
+        batch    = pool[idx].clone() # on clone pour ne pas modifier le pool directement
+        batch[0] = torch.rand(batch[0].shape)   # On prend le premier car l'aléatoire est induit par radom.sample au-dessus.
         return batch, idx
     
     
@@ -37,56 +39,58 @@ if not MULTI_TEX:
         """
         boucle d'entrainement 
 
-        lr : 2e-3 jusqu'au step 2000, puis 2e-4 (cf papier)
+        lr : 2e-3 jusqu'au step 2000, puis 2e-4 (cf article)
 
         """
 
-        #regarder texture_loss dans loss.py et mettre les bons parametres
+        # regarder texture_loss dans loss.py et mettre les bons parametres
 
+        # Initialisation du pool, qui est un ensemble d'états (images) que le modèle va utiliser pour s'entrainer.
         pool = make_pool().to(device)
         optimizer = optim.Adam(nca.parameters(), lr=2e-3)
         loss_history = []
 
-        for step in tqdm(range(steps)):
+        for step in tqdm(range(steps)): # Boucle d'entrainement. Assez standard, sauf quelques détails précisés.
 
-            if step == 2000:
+            if step == 2000: # Changement décrit par l'article.
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = 2e-4
 
-            states, idx = sample_pool(pool, batch)
+            states, idx = sample_pool(pool, batch) # Pioche décrite ci-dessus
             n=random.randint(32, 64) 
-            states = nca(states, steps=n)
+            states = nca(states, steps=n) # Application du modèle
 
-            rgb = states[:, :3, :, :]
+            rgb = states[:, :3, :, :] # On ne prend que les 3 premiers canaux, qui correspondent à l'image RGB générée par le modèle.
 
             # switch loss selon config
             if LOSS == "sot":
-                loss = texture_loss_sot(rgb, target)
+                loss = texture_loss_sot(rgb, target) # cf loss.py pour la fonction texture_loss_sot
             elif LOSS == "gram":
-                loss = texture_loss(rgb, target_grams)
+                loss = texture_loss(rgb, target_grams) #idem
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            pool[idx] = states.detach() #maj du pool avec les nouveaux etats
+            pool[idx] = states.detach() # Mise à jour du pool avec les nouveaux états
             loss_history.append(loss.item())
 
-            if step % 200 == 0:
+            if step % 200 == 0: # Visualisation pour vérifier que tout va bien!
                 print(f"step {step} ; loss {loss.item()}")
                 save_image(states[0,:3,:,:].clamp(0, 1), f"{OUT_DIR}/step_{step}.png") #enregistrer que rgb pour visualiser les images
         
         return nca, loss_history
 
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#                                    MULTI-TEXTURES
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Attention, ici on passe au modèle multi-texture.
 
 if MULTI_TEX:
 
     def make_pool(size=1024, C=C, H=SIZE, W=SIZE):
+
+        """
+        Cree un pool de size etats init avec du bruit U[0,1] ->renvoie tenseur (size, C, H, W)
+        Chaque texture a sa propre pool, donc on "marque" les images de chaque pool avec le code génétique correspondant à la texture pour ne pas tout mélanger.
+        """
 
         pool = torch.rand(size, C, H, W)
         chunk_size = size // N_TEX
@@ -96,29 +100,33 @@ if MULTI_TEX:
         for tex_idx in range(N_TEX):
             bin_code = idx_to_bin(tex_idx, N_G)
             for bit_idx, cha_idx in enumerate(GENOMIC_CHANNELS):
-                pool[tex_idx*chunk_size:(tex_idx+1)*chunk_size, cha_idx, :, :] = bin_code[bit_idx]
+                pool[tex_idx*chunk_size:(tex_idx+1)*chunk_size, cha_idx, :, :] = bin_code[bit_idx] # Marquage des images
 
         return pool
 
     def sample_pool(pool, batch_size, tex_idx):
         """
+        Tire un échantillon de la pool de la texture spécifiée.
+
         """
 
         chunk_size = len(pool) // N_TEX
         start_idx, end_idx = tex_idx*chunk_size, (tex_idx+1)*chunk_size
-
+        # Ici, c'est comme pour le modèle standard
         idx = random.sample(range(start_idx, end_idx), batch_size)
         batch = pool[idx].clone()
-        batch[0] = torch.rand(batch[0].shape)   #jai choisi le premier au pif car aleatoire 
+        batch[0] = torch.rand(batch[0].shape)
+        # On doit bien marquer sur quelle texture on travaille
         bin_code = idx_to_bin(tex_idx, N_G)
         for bit_idx, cha_idx in enumerate(GENOMIC_CHANNELS):
-            batch[0, cha_idx, :, :] = bin_code[bit_idx]
+            batch[0, cha_idx, :, :] = bin_code[bit_idx] # Marquage de l'image réinitialisée pour qu'elle corresponde à la texture choisie
 
         return batch, idx
 
 
     def train(nca, list_targets, list_target_grams, steps, batch, H, W, device):
         """
+        boucle d'entrainement pour le modèle multi-texture, essentiellement identique à l'entrainement standard. On ajoute juste un tirage au sort d'une texture à chaque étape pour piocher dans sa pool correspondante.
         """
 
         # regarder texture_loss dans loss.py et mettre les bons parametres
@@ -133,7 +141,7 @@ if MULTI_TEX:
                 for param_group in optimizer.param_groups:
                     param_group['lr'] = 2e-4
 
-            # on tire au sort une texture pour piocher dans sa pool
+            # on tire au sort une texture pour piocher dans sa pool, seule difference avec le modèle standard
             tex_idx = random.randint(0, N_TEX-1)
             states, idx = sample_pool(pool, batch, tex_idx)
 
@@ -151,12 +159,12 @@ if MULTI_TEX:
             loss.backward()
             optimizer.step()
 
-            pool[idx] = states.detach() #maj du pool avec les nouveaux etats
+            pool[idx] = states.detach() 
             loss_history.append(loss.item())
 
             if step % 200 == 0:
                 print(f"step {step} ; loss {loss.item()} ; texture id {tex_idx}")
-                save_image(states[0,:3,:,:].clamp(0, 1), f"{OUT_DIR}/step_{step}_tex_{tex_idx}.png") #enregistrer que rgb pour visualiser les images
+                save_image(states[0,:3,:,:].clamp(0, 1), f"{OUT_DIR}/step_{step}_tex_{tex_idx}.png") 
         
         return nca, loss_history
 

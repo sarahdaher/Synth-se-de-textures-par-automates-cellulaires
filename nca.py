@@ -3,8 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from config import *
 
-def make_kernels(C, nbFilters=4, preset=0):
-    """Retourne un tensor avec les 4 noyaux (s, sx, sy, lap) et les concatener"""
+def make_kernels(C, preset=0):
+    """Retourne un tensor avec les 4 noyaux (s, sx, sy, lap) et les concatener
+    Chaque preset définit une famille de filtres différente
+    0 ceux du papier de reference"""
     if preset == 0:
         s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32)
         sx  = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32) /8
@@ -44,35 +46,32 @@ def make_kernels(C, nbFilters=4, preset=0):
         kernels = torch.stack([s, s1, s2, s3])
 
     elif preset == 5:
-        rand_filte_size = FILTER_SIZE
-        s = torch.zeros((rand_filte_size, rand_filte_size), dtype=torch.float32)
-        s[rand_filte_size//2, rand_filte_size//2] = 1.0
-        s1 = torch.randint(0, 100, (rand_filte_size, rand_filte_size), dtype=torch.float32)
+        s = torch.zeros((FILTER_SIZE, FILTER_SIZE), dtype=torch.float32)
+        s[FILTER_SIZE//2, FILTER_SIZE//2] = 1.0
+        s1 = torch.randint(0, 100, (FILTER_SIZE, FILTER_SIZE), dtype=torch.float32)
         s1.div_(torch.sum(s1)) 
         s1 = s1 - torch.mean(s1)
-        print(s1)
-        s2 = torch.randint(0, 100, (rand_filte_size, rand_filte_size), dtype=torch.float32)
+        s2 = torch.randint(0, 100, (FILTER_SIZE, FILTER_SIZE), dtype=torch.float32)
         s2.div_(torch.sum(s2))
         s2 = s2 - torch.mean(s2)
-        s3 = torch.randint(0, 100, (rand_filte_size, rand_filte_size), dtype=torch.float32)
+        s3 = torch.randint(0, 100, (FILTER_SIZE, FILTER_SIZE), dtype=torch.float32)
         s3.div_(torch.sum(s3))
         s3 = s3 - torch.mean(s3)
         kernels = torch.stack([s, s1, s2, s3])    
 
     elif preset == 6:
-        s1 = torch.randint(0, 100, (3, 3), dtype=torch.float32)
-        s2 = torch.randint(0, 100, (3, 3), dtype=torch.float32)
+        s1 = torch.randint(0, 100, (FILTER_SIZE, FILTER_SIZE), dtype=torch.float32)
+        s1.div_(torch.sum(s1))
+        s1 = s1 - torch.mean(s1)
+        s2 = torch.randint(0, 100, (FILTER_SIZE, FILTER_SIZE), dtype=torch.float32)
         s2.div_(torch.sum(s2))
         s2 = s2 - torch.mean(s2)
-        print(s2)
-        s3 = torch.randint(0, 100, (3, 3), dtype=torch.float32)
+        s3 = torch.randint(0, 100, (FILTER_SIZE, FILTER_SIZE), dtype=torch.float32)
         s3.div_(torch.sum(s3))
         s3 = s3 - torch.mean(s3)
-        print(s3)
-        s4 = torch.randint(0, 100, (3, 3), dtype=torch.float32)
+        s4 = torch.randint(0, 100, (FILTER_SIZE, FILTER_SIZE), dtype=torch.float32)
         s4.div_(torch.sum(s4))
         s4 = s4 - torch.mean(s4)
-        print(s4)
         kernels = torch.stack([s1, s2, s3, s4])    
         kernels = kernels / (kernels.norm() + 1e-6)
 
@@ -81,8 +80,7 @@ def make_kernels(C, nbFilters=4, preset=0):
         kernels = torch.stack([s])
 
     kernels = kernels.unsqueeze(1).repeat(C, 1, 1, 1) # (4*C, 1, 3, 3)
-    print(kernels.shape)
-    print(kernels)
+
     return kernels
     
 
@@ -91,12 +89,8 @@ class NCA(nn.Module):
 
     def __init__(self, C=C, hidden=HIDDEN, p=P, preset=0):
         """
-        Parameters
-        ----------
-        C : int
-            nombre de canaux du vecteur d'état de chaque cellule (12 dans l'article)
-        p : float
-            probabilité de mise à jour
+        C : nombre de canaux du vecteur d'état de chaque cellule (12 dans l'article)
+        p : probabilité de mise à jour
         """
         super().__init__()
         self.C = C
@@ -108,30 +102,28 @@ class NCA(nn.Module):
             self.nb_filters = 1
 
         #enregistrer les kernels (self.kernels) comme buffer (avec la fct register_buffer pour pas les apprendre car ils sont fixes (sobel et laplacien) ; une fonction pytorch)
-        kernels = make_kernels(C, self.nb_filters, preset)
+        kernels = make_kernels(C, preset)
         self.register_buffer("kernels", kernels)
-
-        #ecrire le mlp
+    
+        #le mlp
         self.mlp = nn.Sequential(
             nn.Conv2d(self.nb_filters*C, hidden, kernel_size=1),
             nn.ReLU(),
             nn.Conv2d(hidden, C, kernel_size=1),
         )
-        nn.init.zeros_(self.mlp[2].weight) #je triche
-        nn.init.zeros_(self.mlp[2].bias) #je triche *2 car jai infini 
+        nn.init.zeros_(self.mlp[2].weight)
+        nn.init.zeros_(self.mlp[2].bias) 
 
 
     def perceive(self, state):
-        """Applique les 4 filtres sur la grille"""
-        # torus topology (a voir comment faire??) + conv depthwise
-        state = F.pad(state, (FILTER_SIZE//2, FILTER_SIZE//2, FILTER_SIZE//2, FILTER_SIZE//2), mode='circular') #torus topolgy c juste circular si jai bien compris
+        """Applique les nb_filters filtres sur chaque canal de la grille.
+        Topologie torique : le padding circulaire connecte les bords opposés.
+        Conv depthwise (groups=C) : chaque canal est filtré indépendamment."""
+
+        state = F.pad(state, (FILTER_SIZE//2, FILTER_SIZE//2, FILTER_SIZE//2, FILTER_SIZE//2), mode='circular') #torus topolgy 
         # Conv depthwise : on applique les memes kernels sur chaque canal de la grille
-        # print("Before perception", state.shape)
-        # print(self.C)
-        # print(state)
         perception_vector = F.conv2d(state, self.kernels.view(-1, 1, FILTER_SIZE, FILTER_SIZE), groups=self.C)
-        # print("Perception vector:", perception_vector.shape)
-        # print(perception_vector[0, :5, :, :])
+
         return perception_vector # (B, 4*C, H, W)
 
     def forward(self, state, steps):
