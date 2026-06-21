@@ -25,10 +25,14 @@ def save_image(tensor_image, path):
     pil_image.save(path)
 
 
-# Pour la partie de fin, si on a envie de tester la reconstruction d'image après l'avoir endommagée. Elle est alors mise dans la boucle d'entrainement, et le modèle doit apprendre à reconstruire l'image endommagée.
-def apply_damage(state, rayon):
-    """
-    efface un cercle au centre de la grille en mettant du bruit a la place
-    """
-    # TODO
-    raise NotImplementedError
+def apply_damage(state, rayon=0.2):
+    """efface un cercle de rayon rayon*min(H,W) au centre de l'image"""
+    B, C, H, W = state.shape
+    state = state.clone()
+    cy, cx = H//2, W//2
+    r = int(rayon * min(H, W))
+    for y in range(H):
+        for x in range(W):
+            if (x-cx)**2 + (y-cy)**2 < r**2:
+                state[:, :, y, x] = torch.rand(B, C, device=state.device)
+    return state

@@ -35,8 +35,11 @@ if not MULTI_TEX:
         plt.show()
     else: # Application du modèle
         nca = NCA(C=C, hidden=HIDDEN, p=P, preset=PRESET).to(device)
-        nca.load_state_dict(torch.load(f"{OUT_DIR}/nca.pth"))
+        #nca.load_state_dict(torch.load(f"{OUT_DIR}/nca.pth"))
+        nca.load_state_dict(torch.load("output/nca_64.pth", weights_only=False, map_location=device))
+        
         nca.eval()
+        
         with torch.no_grad():
             state= torch.rand(NB_IMGS, C, SIZE, SIZE, device=device)
             state= nca(state, steps=200)
@@ -44,8 +47,25 @@ if not MULTI_TEX:
         for i in range(NB_IMGS):
             os.makedirs(f"{OUT_DIR}/preset_{PRESET}", exist_ok=True)
             save_image(state[i,:3,:,:].clamp(0, 1), f"{OUT_DIR}/preset_{PRESET}/final_{i}.png")
+        nca.eval()
 
+        # si on veut appliquer damage decommente cette partie
+        """
+        with torch.no_grad():
+            state   = torch.rand(1, C, SIZE, SIZE, device=device)
+            state   = nca(state, steps=200)
+            save_image(state[0, :3, :, :], f"{OUT_DIR}/original.png")
 
+            damaged = apply_damage(state, rayon=0.2)
+            save_image(damaged[0, :3, :, :], f"{OUT_DIR}/damaged.png")
+
+        if MULTI_TEX: 
+            current = damaged.clone()
+            for i in [10, 25, 50, 75, 100, 150, 200]:
+                current = damaged.clone()  
+                current = nca(current, steps=i)
+                save_image(current[0, :3, :, :].clamp(0, 1), f"{OUT_DIR}/recons_step_{i}.png")
+        """
 if MULTI_TEX: # Presque la même chose
 
     list_targets = []

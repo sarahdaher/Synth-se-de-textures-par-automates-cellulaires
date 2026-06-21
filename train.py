@@ -13,24 +13,25 @@ from tqdm import tqdm
 
 if not MULTI_TEX:
 
-    def make_pool(size=1024, C=12, H=128, W=128):
+    def make_pool(size=1024, C=12, H=SIZE, W=SIZE):
         """
         Cree un pool de size etats init avec du bruit U[0,1] ->renvoie tenseur (size, C, H, W)
+        plutôt que de recommencer de zéro à chaque step, on continue depuis des états déjà partiellement développés
         """
         return torch.rand(size, C, H, W)
 
 
     def sample_pool(pool, batch_size):
         """
-        "At each training step we sample a few states from the pool and replace one of them with an empty state, so the model doesn't forget how to build the pattern from scratch" (citee du papier)
-
-        Pioche batch_size états aléatoires dans le pool et force un d'entre eux à être réinitialisé avec du bruit
-
+        Pioche batch_size états aléatoires dans le pool.
+        Force la réinitialisation du premier état tiré (au pif) avec du bruit aléatoire, comme décrit dans le papier :
+        "we replace one of them with an empty state, so the model doesn't forget how to build the pattern from scratch"
+        
         on return batch (batch_size, C, H, W), idx (liste d'indices) 
         """
         
         idx      = random.sample(range(len(pool)), batch_size) # Choix aléatoire d'indices
-        batch    = pool[idx].clone() # "At each training step we sample a few states from the pool and replace one of them with an empty state", donc ici on clone pour ne pas modifier le pool directement
+        batch    = pool[idx].clone() # on clone pour ne pas modifier le pool directement
         batch[0] = torch.rand(batch[0].shape)   # On prend le premier car l'aléatoire est induit par radom.sample au-dessus.
         return batch, idx
     
@@ -145,7 +146,7 @@ if MULTI_TEX:
             tex_idx = random.randint(0, N_TEX-1)
             states, idx = sample_pool(pool, batch, tex_idx)
 
-            n=random.randint(32, 128) 
+            n=random.randint(32, 64) 
             states = nca(states, steps=n)
 
             rgb = states[:, :3, :, :]
