@@ -20,9 +20,9 @@ def normalize(x):
 def gram_matrix(tnsr):
     """
     Calcule la matrice de Gram d'un tenseur de features
-    tnsr représente les activations d'une couche du VGG
-    tnsr de shape(B, C, H, W) et on return (B, C, C)
-    regarder la ref 11 du papier pour la formule et le code est pris de la ressource ci-dessus
+        tnsr représente les activations d'une couche du VGG
+        tnsr de shape(B, C, H, W) et on return (B, C, C)
+    (Regarder la ref 11 du papier pour la formule ; le code est pris de la ressource ci-dessus)
     """
     b, c, h, w = tnsr.size()
     Fm = tnsr.view(b, c, h * w)
@@ -33,7 +33,7 @@ def gram_matrix(tnsr):
 
 def get_vgg():
     """
-    Charge le modèle VGG16 préentrainé sur ImageNet et le met en mode évaluation.
+    Charge le modèle VGG16 préentrainé sur ImageNet et le met en mode évaluation
     """
     vgg = tv.vgg16(weights=tv.VGG16_Weights.IMAGENET1K_V1).features.eval()
     for p in vgg.parameters():
@@ -47,7 +47,7 @@ VGG = get_vgg().to(device)
 
 def get_target_grams(img):
     """
-    Récupère lesmatrices de Gram de l'image cible (texture de référence)
+    Récupère les matrices de Gram de l'image cible (texture de référence)
     """
     grams = []
     x = normalize(img)
@@ -108,7 +108,7 @@ def ot_loss(source, target, proj_n=32):
     """
     Perte entre deux distributions de features via la méthode Sliced Wasserstein
     Principe : on projette source et target sur proj_n directions aléatoires, on trie chaque projection, 
-    puis on mesure l'écart**2 (la distance de Wasserstein 1D entre deux distributions triées est exactement le L2 entre leurs versions triées).
+    puis on mesure l'écart**2 (la distance de Wasserstein 1D entre deux distributions triées est exactement le L2 entre leurs versions triées)
     """
     ch = source.shape[1]
 

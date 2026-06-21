@@ -48,7 +48,7 @@ if not MULTI_TEX:
             save_image(state[i,:3,:,:].clamp(0, 1), f"{OUT_DIR}/preset_{PRESET}/final_{i}.png")
         nca.eval()
 
-        # si on veut appliquer damage décommenter cette partie
+        # si on veut appliquer damage, décommenter cette partie
         """
         with torch.no_grad():
             state   = torch.rand(1, C, SIZE, SIZE, device=device)
@@ -64,6 +64,7 @@ if not MULTI_TEX:
                 current = nca(current, steps=i)
                 save_image(current[0, :3, :, :].clamp(0, 1), f"{OUT_DIR}/recons_step_{i}.png")
         """
+
 if MULTI_TEX: # Presque la même chose
 
     list_targets = []
@@ -90,13 +91,12 @@ if MULTI_TEX: # Presque la même chose
         with torch.no_grad():
             state= torch.rand(NB_IMGS, C, SIZE, SIZE, device=device)
 
-            # on initialise les genomic channels pour dire "on veut synthétiser CETTE texture"
+            # Initialisation des genomic channels 
             for bit_idx, cha_idx in enumerate(GENOMIC_CHANNELS):
                 state[:, cha_idx, :, :] = TARGET_TEX[bit_idx]
         
             state= nca(state, steps=200)
 
-        # pour le nom de dossier d'output du test
         filename = os.path.basename(IMAGES_PATHS[TEX_IDX])
         tex_name = texture_name = os.path.splitext(filename)[0]
 

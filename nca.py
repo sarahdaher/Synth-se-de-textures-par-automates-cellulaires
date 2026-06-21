@@ -5,8 +5,8 @@ from config import *
 
 def make_kernels(C, preset=0):
     """
-    Retourne un tenseur avec les 4 noyaux (s, sx, sy, lap) et les concatène.  
-    Chaque preset définit une famille de filtres différente (preset=0 pour l'article de référence).
+    Retourne un tenseur avec les 4 noyaux (s, sx, sy, lap) et les concatène  
+    Chaque preset définit une famille de filtres différente (preset=0 pour l'article de référence, cf. README pour le reste)
     """
     if preset == 0:
         s = torch.tensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=torch.float32)
@@ -90,7 +90,7 @@ class NCA(nn.Module):
 
     def __init__(self, C=C, hidden=HIDDEN, p=P, preset=0):
         """
-        C : nombre de canaux du vecteur d'état de chaque cellule (12 dans l'article)
+        C : nombre de canaux du vecteur d'état de chaque cellule (12 dans l'article pour synthèse mono-texture)
         p : probabilité de mise à jour
         """
         super().__init__()
@@ -118,9 +118,9 @@ class NCA(nn.Module):
 
     def perceive(self, state):
         """
-        Applique les nb_filters filtres sur chaque canal de la grille.  
-        Topologie torique : le padding circulaire connecte les bords opposés.  
-        Conv depthwise (groups=C) : chaque canal est filtré indépendamment.
+        Applique les nb_filters filtres sur chaque canal de la grille
+        Topologie torique : le padding circulaire connecte les bords opposés
+        Conv depthwise (groups=C) : chaque canal est filtré indépendamment
         """
 
         state = F.pad(state, (FILTER_SIZE//2, FILTER_SIZE//2, FILTER_SIZE//2, FILTER_SIZE//2), mode='circular') #torus topolgy 

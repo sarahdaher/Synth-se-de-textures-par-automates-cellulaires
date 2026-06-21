@@ -9,46 +9,46 @@ MULTI_TEX = False
 # Choix des images, qui se trouvent dans le dossier "textures" (seul le nom de l'image est à préciser)
 if not MULTI_TEX: # Choix de l'image pour le modèle standard
     IMAGE_PATH = "mixte.PNG" # Nom de l'image source
-    C = 12
+    C = 12 # Nombre de canaux dans le vecteur d'état d'une cellule
 
 
 if MULTI_TEX:
 
     N_G = 2 # On génére 2^N_G textures différentes, donc il faut mettre le bon nombre d'images après (ici 4).
     IMAGES_PATHS = [ 
-        "ecailles.jpg", # Nom des images sources
-        "brique.jpg",
-        "cerise.jpg",
-        "moquette.jpg"
+        "textures/ecailles.jpg", # Nom des images sources
+        "textures/brique.jpg",
+        "textures/cerise.jpg",
+        "textures/moquette.jpg"
     ]
 
     TEX_IDX = 2 # En phase d'inférence, le modèle génère une texture à la fois. Ici, il s'agit donc du paramètre qui détermine sur quelle texture bascule le modèle (placement dans le vecteur ci-dessus)
-    C = 18 # C = 3 + N_G + N_H
+    C = 18 # Nombre de canaux dans le vecteur d'état d'une cellule (avec canaux génomiques : C = 3 + N_H = 3 + N_G + N_C)
 
 
-    # Case fixe qui gère le code génétique pour le modèle multi-texture. Ne pas modifier.
+    # Bloc fixe qui gère le code génétique pour le modèle multi-texture. NE PAS MODIFIER.
     ############################################################################################
 
     if len(IMAGES_PATHS) != 2**N_G:
         raise ValueError(f"Le vecteur IMAGES_PATHS doit être de taille 2^N_G = {2**N_G}.") # Erreur si le modèle multi-texture n'a pas le bon nombre de sources
     
     N_TEX = len(IMAGES_PATHS) # Nombre de textures sources
-    GENOMIC_CHANNELS = list(range(3, 3 + N_G)) # Canaux génétiques (pour le modèle multi-texture), correspondant aux N_G canaux qui codent la texture à générer
+    GENOMIC_CHANNELS = list(range(3, 3 + N_G)) # Canaux génomiques (pour le modèle multi-texture), correspondant aux N_G canaux qui codent la texture à générer
 
     def idx_to_bin(tex_idx, n_g):
         """
-        Convertit l'indice d'une texture en son code binaire ("code génétique")
+        Convertit l'indice d'une texture en son code binaire (identifiant unique de la texture)
         """
         return [float((tex_idx >> i) & 1) for i in range(n_g)]
 
-    TARGET_TEX = idx_to_bin(TEX_IDX, N_G) # Code génétique de la texture à générer
+    TARGET_TEX = idx_to_bin(TEX_IDX, N_G) 
 
 
 ###############################################################################################
 
-OUT_DIR = "output" # Placement des images générées
-STEPS = 10000 # Nombre de pas du modèle (en cas multi-texture, on estime STEPS/N_TEX pas par texture, donc il faut l'augmenter). Ces paramètres sont réglés de manière assez empirique en pratique.
-BATCH = 4 # Taille du batch 
+OUT_DIR = "output" # Dossier de rangement des images générées
+STEPS = 10000 # Nombre d'itérations du modèle (en cas multi-texture, on estime STEPS/N_TEX pas par texture, donc il faut l'augmenter). Ces paramètres sont réglés de manière assez empirique en pratique.
+BATCH = 4 # Taille du batch tiré dans la pool
 SIZE = 128 # Taille de l'image générée 
 HIDDEN = 96 # Nombre de canaux du réseau 
 P = 0.5 # Probabilité de dropout 
@@ -70,6 +70,7 @@ NB_IMGS = 10 # Nombre d'images à générer (en cas d'inférence)
 
 
 # Réglages selon l'ordinateur
+
 # Sur Mac :
 # device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
 # Sinon :
